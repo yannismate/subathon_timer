@@ -16,6 +16,7 @@ import * as tmi from 'tmi.js';
   await db.run('CREATE TABLE IF NOT EXISTS subs (timestamp INTEGER, ending_at INTEGER, seconds_per_sub INTEGER, tier INTEGER, user_name TEXT);');
   await db.run('CREATE TABLE IF NOT EXISTS sub_bombs (timestamp INTEGER, amount_subs INTEGER, tier INTEGER, user_name TEXT);');
   await db.run('CREATE TABLE IF NOT EXISTS graph (timestamp INTEGER, ending_at INTEGER);');
+  await db.run('CREATE TABLE IF NOT EXISTS settings (key TEXT, value INTEGER);');
 
 
   const twitch = tmi.Client({
@@ -27,24 +28,90 @@ import * as tmi from 'tmi.js';
   });
   await twitch.connect().catch(console.error);
 
-  twitch.on('message', (channel: string, userstate: tmi.ChatUserstate, message: string ,self: boolean) => {
-    if(self) return;
-    console.log(message);
-  });
-
   const app = express.default();
   app.use(express.static('public'));
 
   const server = http.createServer(app);
   const io = new socketio.Server(server);
 
+  let isStarted = false;
+  let startedAt = 0;
 
-  io.on('connection', (socket) => {
-    console.log(socket);
-  });
+  const resStart = await db.get("SELECT * FROM settings WHERE key='started_at';");
+  if(resStart) {
+    isStarted = true;
+    startedAt = resStart['value'];
+    console.log(`Found started_at in data.db: ${new Date(startedAt).toISOString()}`);
+  }
 
+  let baseTime = cfg.time.base_value;
+  const resTime = await db.get("SELECT * FROM settings WHERE key='base_time';");
+  if(resTime) {
+    baseTime = resTime['value'];
+    console.log(`Found base_time in data.db: ${baseTime}`);
+  }
+
+  const appState = new AppState(twitch, db, io, isStarted, startedAt, baseTime);
+
+  registerSocketEvents(appState);
+  registerTwitchEvents(appState);
 
   server.listen(cfg.port, () => {
     console.log(`Open the timer at http://localhost:${cfg.port}/timer.html`);
   });
 })();
+
+function registerTwitchEvents(state: AppState) {
+  state.twitch.on('message', (channel: string, userstate: tmi.ChatUserstate, message: string ,self: boolean) => {
+    if(self) return;
+    console.log(message);
+  });
+
+  state.twitch.on('subgift', (channel: string, username: string, streakMonths: number, recipient: string,
+                        methods: tmi.SubMethods, userstate: tmi.SubGiftUserstate) => {
+
+  });
+
+  state.twitch.on('submysterygift', (channel: string, username: string, numbOfSubs: number,
+                               methods: tmi.SubMethods, userstate: tmi.SubMysteryGiftUserstate) => {
+
+  });
+
+  state.twitch.on('subscription', (channel: string, username: string, methods: tmi.SubMethods,
+                             message: string, userstate: tmi.SubUserstate) => {
+
+  });
+
+  state.twitch.on('resub', (channel: string, username: string, months: number, message: string,
+                      userstate: tmi.SubUserstate, methods: tmi.SubMethods) => {
+
+  });
+}
+
+function registerSocketEvents(state: AppState) {
+  state.io.on('connection', (socket) => {
+    console.log(socket);
+  });
+}
+
+class AppState {
+  twitch: tmi.Client;
+  db: sqlite.Database;
+  io: socketio.Server;
+
+  isStarted: boolean;
+  endingAt: number;
+
+  baseTime: number;
+
+  constructor(twitch: tmi.Client, db: sqlite.Database, io: socketio.Server,
+              isStarted: boolean, endingAt: number, baseTime: number) {
+    this.twitch = twitch;
+    this.db = db;
+    this.io = io;
+    this.isStarted = isStarted;
+    this.endingAt = endingAt;
+    this.baseTime = baseTime;
+  }
+
+}

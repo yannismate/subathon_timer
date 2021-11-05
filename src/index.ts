@@ -40,14 +40,14 @@ import * as tmi from 'tmi.js';
   const resStart = await db.get("SELECT * FROM settings WHERE key='started_at';");
   if(resStart) {
     isStarted = true;
-    startedAt = resStart['value'];
+    startedAt = resStart.value;
     console.log(`Found started_at in data.db: ${new Date(startedAt).toISOString()}`);
   }
 
   let baseTime = cfg.time.base_value;
   const resTime = await db.get("SELECT * FROM settings WHERE key='base_time';");
   if(resTime) {
-    baseTime = resTime['value'];
+    baseTime = resTime.value;
     console.log(`Found base_time in data.db: ${baseTime}`);
   }
 
@@ -69,22 +69,22 @@ function registerTwitchEvents(state: AppState) {
 
   state.twitch.on('subgift', (channel: string, username: string, streakMonths: number, recipient: string,
                         methods: tmi.SubMethods, userstate: tmi.SubGiftUserstate) => {
-
+    console.log('subgift');
   });
 
   state.twitch.on('submysterygift', (channel: string, username: string, numbOfSubs: number,
                                methods: tmi.SubMethods, userstate: tmi.SubMysteryGiftUserstate) => {
-
+    console.log('submysterygift');
   });
 
   state.twitch.on('subscription', (channel: string, username: string, methods: tmi.SubMethods,
                              message: string, userstate: tmi.SubUserstate) => {
-
+    console.log('subscription');
   });
 
   state.twitch.on('resub', (channel: string, username: string, months: number, message: string,
                       userstate: tmi.SubUserstate, methods: tmi.SubMethods) => {
-
+    console.log('resub');
   });
 }
 

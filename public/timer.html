@@ -2,9 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Title</title>
+  <title>Subathon Timer</title>
+  <link rel="stylesheet" href="timer.css">
 </head>
 <body>
+
+<div class="debug" id="container">
+  <div class="inner-container" id="timer-container">
+    <div id="uptime">Uptime 0000:00:00</div>
+    <div id="timer">0000:00:00</div>
+    <div id="incentives"></div>
+  </div>
+</div>
 
 <script src="js/socket.io.js"></script>
 <script src="timer.js"></script>

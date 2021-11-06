@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "start": "shx rm -r dist && tsc && shx cp -r public ./dist && node dist/src/index.js",
+    "start": "shx rm -rf dist && tsc && shx cp -r public ./dist && node dist/src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "yannismate",

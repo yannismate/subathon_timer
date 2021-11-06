@@ -5,6 +5,7 @@ import sqlite3 from 'sqlite3'
 import * as sqlite from 'sqlite'
 import cfg from '../config.json'
 import * as tmi from 'tmi.js';
+import crypto from "crypto";
 const USE_MOCK = !!process.env.USE_FDGT_MOCK;
 
 (async () => {
@@ -81,16 +82,22 @@ const USE_MOCK = !!process.env.USE_FDGT_MOCK;
     console.log(`Open the timer at http://localhost:${cfg.port}/timer.html`);
     if(USE_MOCK) {
       setTimeout(async () => {
-        await twitch.say(cfg.channel, 'bits');
-        console.log("bits emulated");
+        await twitch.say(cfg.channel, 'submysterygift');
+        console.log("sum bomb emulated");
       }, 5000);
     }
   });
 })();
 
 function registerTwitchEvents(state: AppState) {
-  state.twitch.on('message', async (channel: string, userstate: tmi.ChatUserstate, message: string ,self: boolean) => {
+  state.twitch.on('message', async (channel: string, userstate: tmi.ChatUserstate, message: string, self: boolean) => {
     if(self) return;
+    if(!cfg.wheel_blacklist.includes(userstate.username||"")) {
+      if(Math.random() > 0.90) {
+        state.randomTarget = userstate.username || "";
+        state.randomTargetIsMod = userstate.mod || false;
+      }
+    }
     if(message.startsWith('?') && cfg.admins.includes(userstate.username||"")) {
 
       {
@@ -145,7 +152,7 @@ function registerTwitchEvents(state: AppState) {
   });
 
   state.twitch.on('subgift', async (channel: string, username: string, streakMonths: number, recipient: string,
-                        methods: tmi.SubMethods, userstate: tmi.SubGiftUserstate) => {
+                        methods: tmi.SubMethods, _userstate: tmi.SubGiftUserstate) => {
     if(state.endingAt < Date.now()) return;
     const multiplier = multiplierFromPlan(methods.plan);
     const secondsToAdd = Math.round(state.baseTime * multiplier * 1000) / 1000;
@@ -155,11 +162,29 @@ function registerTwitchEvents(state: AppState) {
 
   state.twitch.on('submysterygift', (channel: string, username: string, numbOfSubs: number,
                                methods: tmi.SubMethods, userstate: tmi.SubMysteryGiftUserstate) => {
-    console.log('submysterygift');
+    const possibleResults = cfg.wheel.filter(res => res.min_subs <= numbOfSubs);
+    if(possibleResults.length > 0) {
+      const totalChances = possibleResults.map(r => r.chance).reduce((a,b) => a+b);
+      possibleResults.forEach(r => r.chance = r.chance / totalChances);
+      const rand = Math.random();
+      let result = possibleResults[0];
+      let resRand = 0;
+      for (const sp of possibleResults) {
+        resRand += sp.chance;
+        if(resRand >= rand) {
+          result = sp;
+        }
+      }
+
+      const spinId = crypto.randomBytes(8).toString("hex");
+      const spin = {results: possibleResults, random: rand, id: spinId, res: result, sender: userstate.login||"", mod: userstate.mod};
+      state.spins.set(spinId, spin);
+      state.io.emit('display_spin', spin);
+    }
   });
 
   state.twitch.on('subscription', async (channel: string, username: string, methods: tmi.SubMethods,
-                             message: string, userstate: tmi.SubUserstate) => {
+                             _message: string, _userstate: tmi.SubUserstate) => {
     if(state.endingAt < Date.now()) return;
     const multiplier = multiplierFromPlan(methods.plan);
     const secondsToAdd = Math.round(state.baseTime * multiplier * 1000) / 1000;
@@ -176,7 +201,7 @@ function registerTwitchEvents(state: AppState) {
     await state.db.run('INSERT INTO subs VALUES(?, ?, ?, ?, ?);', [Date.now(), state.endingAt, methods.plan||"undefined", username]);
   });
 
-  state.twitch.on('cheer', async (channel: string, userstate: tmi.ChatUserstate, message: string) => {
+  state.twitch.on('cheer', async (channel: string, userstate: tmi.ChatUserstate, _message: string) => {
     const bits = parseInt(userstate.bits || "0", 10);
     if(state.endingAt < Date.now()) return;
     const multiplier = cfg.time.multipliers.bits;
@@ -197,6 +222,12 @@ function registerSocketEvents(state: AppState) {
     });
     socket.emit('update_timer', {'ending_at': state.endingAt, 'forced': true});
     socket.emit('update_uptime', {'started_at': state.startedAt});
+    for(const spin of state.spins.values()) {
+      socket.emit('display_spin', spin);
+    }
+    socket.on('spin_completed', async spinId => {
+      await state.executeSpinResult(spinId);
+    });
   });
 }
 
@@ -210,6 +241,11 @@ class AppState {
 
   endingAt: number;
   baseTime: number;
+
+  randomTarget: string = "definitelynotyannis";
+  randomTargetIsMod: boolean = false;
+
+  spins: Map<string, any> = new Map();
 
   constructor(twitch: tmi.Client, db: sqlite.Database, io: socketio.Server,
               isStarted: boolean, startedAt: number, endingAt: number, baseTime: number) {
@@ -258,6 +294,34 @@ class AppState {
     this.endingAt = this.endingAt + (seconds * 1000);
     this.io.emit('update_timer', {'ending_at': this.endingAt});
     console.log(`Added ${seconds} seconds.`);
+  }
+
+  async executeSpinResult(spinId: string) {
+    if(!this.spins.has(spinId)) return;
+    const spin = this.spins.get(spinId);
+    this.spins.delete(spinId);
+
+    if(spin.res.type === 'time') {
+      this.addTime(spin.res.value);
+    } else if(spin.res.type === 'timeout') {
+      if(spin.res.target === 'random') {
+        const target = this.randomTarget;
+        await this.twitch.timeout(cfg.channel, target, spin.res.value, "WHEEL SPIN");
+        if(this.randomTargetIsMod) {
+          setTimeout(async () => {
+            await this.twitch.mod(cfg.channel, target);
+          }, 1000*spin.res.value + 5000);
+        }
+      } else if(spin.res.target === 'sender') {
+        const wasMod = spin.res.mod;
+        await this.twitch.timeout(cfg.channel, spin.sender, spin.res.value, "WHEEL SPIN");
+        if(wasMod) {
+          setTimeout(async () => {
+            await this.twitch.mod(cfg.channel, spin.sender);
+          }, 1000*spin.res.value + 5000);
+        }
+      }
+    }
   }
 
 }

@@ -1,6 +1,7 @@
 import * as express from "express";
 import * as http from "http";
 import * as socketio from "socket.io";
+import * as socketioclient from "socket.io-client";
 import sqlite3 from 'sqlite3'
 import * as sqlite from 'sqlite'
 import cfg from '../config.json'
@@ -77,6 +78,9 @@ const USE_MOCK = !!process.env.USE_FDGT_MOCK;
 
   registerSocketEvents(appState);
   registerTwitchEvents(appState);
+  if(cfg.use_streamlabs) {
+    registerStreamlabsEvents(appState);
+  }
 
   server.listen(cfg.port, () => {
     console.log(`Open the timer at http://localhost:${cfg.port}/timer.html`);
@@ -228,6 +232,18 @@ function registerSocketEvents(state: AppState) {
     socket.on('spin_completed', async spinId => {
       await state.executeSpinResult(spinId);
     });
+  });
+}
+
+function registerStreamlabsEvents(state: AppState) {
+  const slabs = socketioclient.io(`https://sockets.streamlabs.com?token=${cfg.streamlabs_token}`, {transports: ['websocket']});
+  slabs.on('event', (eventData : any) => {
+    if(eventData.type === 'donation') {
+      const amount = eventData.message.amount;
+      if(state.endingAt < Date.now()) return;
+      const secondsToAdd = Math.round(state.baseTime * amount * cfg.time.multipliers.donation * 1000) / 1000;
+      state.addTime(secondsToAdd);
+    }
   });
 }
 

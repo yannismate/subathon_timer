@@ -216,7 +216,7 @@ function registerTwitchEvents(state: AppState) {
 }
 
 function registerSocketEvents(state: AppState) {
-  state.io.on('connection', (socket) => {
+  state.io.on('connection', async (socket) => {
     socket.emit('update_incentives', {
       'tier_1': Math.round(state.baseTime * cfg.time.multipliers.tier_1),
       'tier_2': Math.round(state.baseTime * cfg.time.multipliers.tier_2),
@@ -226,13 +226,14 @@ function registerSocketEvents(state: AppState) {
     });
     socket.emit('update_timer', {'ending_at': state.endingAt, 'forced': true});
     socket.emit('update_uptime', {'started_at': state.startedAt});
+    await state.broadcastGraph();
+
     for(const spin of state.spins.values()) {
       socket.emit('display_spin', spin);
     }
     socket.on('spin_completed', async spinId => {
       await state.executeSpinResult(spinId);
-    });
-  });
+    });});
 }
 
 function registerStreamlabsEvents(state: AppState) {
@@ -278,6 +279,7 @@ class AppState {
       await db.run(`INSERT INTO graph VALUES(?, ?);`, [Date.now(), this.endingAt]);
       // Keep only the latest 120 records
       await db.run('DELETE FROM graph WHERE timestamp IN (SELECT timestamp FROM graph ORDER BY timestamp DESC LIMIT -1 OFFSET 120);');
+      await this.broadcastGraph();
     }, 1000*60);
   }
 
@@ -339,6 +341,17 @@ class AppState {
       }
     }
   }
+
+  async broadcastGraph() {
+    const res = await this.db.all('SELECT ending_at FROM graph ORDER BY timestamp DESC LIMIT 50;');
+    const graphArray : any[] = Array.from({length: 60}, (_, n) => {
+      if(res.length === 0) return 0;
+      else if(n < 60 - res.length) return res[res.length - 1].ending_at;
+      else return res[60-(1+n)].ending_at;
+    });
+    this.io.emit('update_graph', graphArray);
+  }
+
 
 }
 

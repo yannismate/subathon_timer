@@ -37,16 +37,19 @@ body {
     width: 100%;
     height: 100%;
     background: darkred;
-    padding: 5%;
+    padding: 2% 5%;
 }
 
 #container {
     height: 100%;
+    overflow: hidden;
 }
 
 .inner-container {
     width: 100%;
     height: 100%;
+    display: flex;
+    flex-flow: column;
 }
 
 #uptime {
@@ -59,4 +62,38 @@ body {
     text-align: center;
     font-size: 10em;
     color: var(--primary-color);
+}
+
+#incentives {
+    text-align: center;
+    font-size: 2.5em;
+    color: var(--primary-color);
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    column-gap: 5%;
+}
+
+#graph {
+    flex-grow: 1;
+    padding: 3% 7% 10% 7%;
+}
+
+
+#graph_svg > path {
+    fill: none;
+    stroke: var(--primary-color);
+    stroke-width: 0.4rem;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+}
+
+#graph_icon_container {
+    transform: translateX(100%) translateY(-50%);
+}
+
+#graph_icon {
+    transform: translateX(-50%);
 }

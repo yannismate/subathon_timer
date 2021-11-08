@@ -1,13 +1,13 @@
 @font-face {
-    font-family: 'Roboto';
-    url('fonts/Roboto-Regular.ttf')  format('truetype');
+    font-family: 'Lexend';
+    src: url('fonts/Lexend-Regular.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }
 
 @font-face {
-    font-family: 'Roboto';
-    url('fonts/Roboto-Bold.ttf')  format('truetype');
+    font-family: 'Lexend';
+    src: url('fonts/Lexend-Bold.ttf') format('truetype');
     font-weight: bold;
     font-style: normal;
 }
@@ -21,7 +21,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: Roboto, sans-serif;
+    font-family: Lexend, sans-serif;
 }
 
 .debug {
@@ -60,6 +60,7 @@ body {
 
 #timer {
     text-align: center;
+    font-weight: bold;
     font-size: 10em;
     color: var(--primary-color);
 }
@@ -73,6 +74,11 @@ body {
     flex-wrap: wrap;
     justify-content: space-evenly;
     column-gap: 5%;
+}
+
+.incentive {
+    flex-grow: 1;
+    flex-basis: 26%;
 }
 
 #graph {

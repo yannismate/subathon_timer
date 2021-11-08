@@ -311,7 +311,6 @@ class AppState {
   addTime(seconds: number) {
     this.endingAt = this.endingAt + (seconds * 1000);
     this.io.emit('update_timer', {'ending_at': this.endingAt});
-    console.log(`Added ${seconds} seconds.`);
   }
 
   async executeSpinResult(spinId: string) {

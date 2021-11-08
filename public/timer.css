@@ -98,7 +98,7 @@ body {
 #graph_svg > path {
     fill: none;
     stroke: var(--primary-color);
-    stroke-width: 0.4rem;
+    stroke-width: 0.8rem;
     stroke-linejoin: round;
     stroke-linecap: round;
     vector-effect: non-scaling-stroke;

@@ -86,9 +86,10 @@ const USE_MOCK = !!process.env.USE_FDGT_MOCK;
     console.log(`Open the timer at http://localhost:${cfg.port}/timer.html`);
     if(USE_MOCK) {
       setTimeout(async () => {
-        await twitch.say(cfg.channel, 'submysterygift');
-        console.log("sum bomb emulated");
-      }, 5000);
+        await twitch.say(cfg.channel, 'subgift');
+        await twitch.say(cfg.channel, 'subgift');
+        console.log("subgift");
+      }, 8000);
     }
   });
 })();
@@ -103,7 +104,6 @@ function registerTwitchEvents(state: AppState) {
       }
     }
     if(message.startsWith('?') && cfg.admins.includes(userstate.username||"")) {
-
       {
         // ?start
         const match = message.match(/^\?start ((\d+:)?\d{2}:\d{2})/);
@@ -343,13 +343,13 @@ class AppState {
   }
 
   async broadcastGraph() {
-    const res = await this.db.all('SELECT ending_at FROM graph ORDER BY timestamp DESC LIMIT 50;');
+    const res = await this.db.all('SELECT timestamp,ending_at FROM graph ORDER BY timestamp DESC LIMIT 50;');
     const graphArray : any[] = Array.from({length: 60}, (_, n) => {
       if(res.length === 0) return 0;
-      else if(n < 60 - res.length) return res[res.length - 1].ending_at;
-      else return res[60-(1+n)].ending_at;
+      else if(n < 60 - res.length) return res[res.length - 1].ending_at - res[res.length - 1].timestamp;
+      else return res[60-(1+n)].ending_at - res[60-(1+n)].timestamp;
     });
-    this.io.emit('update_graph', graphArray);
+    this.io.emit('update_graph', {data: graphArray});
   }
 
 

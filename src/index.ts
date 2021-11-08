@@ -85,11 +85,10 @@ const USE_MOCK = !!process.env.USE_FDGT_MOCK;
   server.listen(cfg.port, () => {
     console.log(`Open the timer at http://localhost:${cfg.port}/timer.html`);
     if(USE_MOCK) {
-      setTimeout(async () => {
-        await twitch.say(cfg.channel, 'subgift');
-        await twitch.say(cfg.channel, 'subgift');
-        console.log("subgift");
-      }, 8000);
+      setInterval(async () => {
+        await twitch.say(cfg.channel, 'submysterygift');
+        console.log("submysterygift");
+      }, 22000);
     }
   });
 })();
@@ -177,6 +176,7 @@ function registerTwitchEvents(state: AppState) {
         resRand += sp.chance;
         if(resRand >= rand) {
           result = sp;
+          break;
         }
       }
 
@@ -324,18 +324,18 @@ class AppState {
     } else if(spin.res.type === 'timeout') {
       if(spin.res.target === 'random') {
         const target = this.randomTarget;
-        await this.twitch.timeout(cfg.channel, target, spin.res.value, "WHEEL SPIN");
+        await this.twitch.timeout(cfg.channel, target, spin.res.value, "WHEEL SPIN").catch(err => console.log('Could not execute wheel TO!', err));
         if(this.randomTargetIsMod) {
           setTimeout(async () => {
-            await this.twitch.mod(cfg.channel, target);
+            await this.twitch.mod(cfg.channel, target).catch(err => console.log('Could not remod user after wheel TO!', err));
           }, 1000*spin.res.value + 5000);
         }
       } else if(spin.res.target === 'sender') {
         const wasMod = spin.res.mod;
-        await this.twitch.timeout(cfg.channel, spin.sender, spin.res.value, "WHEEL SPIN");
+        await this.twitch.timeout(cfg.channel, spin.sender, spin.res.value, "WHEEL SPIN").catch(err => console.log('Could not execute wheel TO!', err));
         if(wasMod) {
           setTimeout(async () => {
-            await this.twitch.mod(cfg.channel, spin.sender);
+            await this.twitch.mod(cfg.channel, spin.sender).catch(err => console.log('Could not remod user after wheel TO!', err));
           }, 1000*spin.res.value + 5000);
         }
       }

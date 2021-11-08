@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
   <meta charset="UTF-8">
   <title>Subathon Timer</title>
+  <link rel="stylesheet" href="css/animate.min.css">
   <link rel="stylesheet" href="timer.css">
 </head>
 <body>
@@ -28,6 +29,17 @@
       <div id="graph_icon_container">
         <img id="graph_icon" src="assets/graph_icon.gif" alt=""/>
       </div>
+    </div>
+  </div>
+
+  <div class="inner-container animate__bounceIn" id="wheel-container" style="display: none">
+    <div id="wheel-text-container">
+      <div id="wheel-text">Gift Wheel</div>
+    </div>
+    <div id="wheel">
+      <div id="wheel-pin"></div>
+      <svg id="wheel_svg" viewBox="0 0 20 20">
+      </svg>
     </div>
   </div>
 </div>

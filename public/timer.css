@@ -14,7 +14,8 @@
 
 :root {
     --primary-color: #FFFFFF;
-    --secondary-color: #bebebe;
+    --primary--wheel: #FFC400;
+    --secondary-color: #BEBEBE;
 }
 
 * {
@@ -28,6 +29,11 @@
     border: 2px red solid;
 }
 
+body {
+    width: 100%;
+    height: 100vh;
+}
+
 #background {
     position: absolute;
     height: 100%;
@@ -37,27 +43,20 @@
     z-index: -1;
 }
 
-html {
-    height: 100%;
-    width: 100%;
-}
-
-body {
-    width: 100%;
-    height: 100%;
-    padding: 2% 5%;
-}
-
 #container {
-    height: 100%;
-    overflow: hidden;
+    position: fixed;
+    height: 100% !important;
+    width: 100% !important;
 }
 
 .inner-container {
-    width: 100%;
-    height: 100%;
+    margin: 2% 5%;
+    position: absolute;
+    width: 90%;
+    height: 96%;
     display: flex;
     flex-flow: column;
+    overflow: hidden;
 }
 
 #uptime {
@@ -110,4 +109,67 @@ body {
 
 #graph_icon {
     transform: translateX(-50%);
+}
+
+
+
+#timer-container {
+    transition: 0.2s filter linear;
+}
+
+.wheel-active > #timer-container {
+    filter: blur(12px);
+}
+
+#wheel-container {
+    transform: scale(0, 0);
+}
+
+.wheel-active > #wheel-container {
+    display: block !important;
+    transform: scale(1, 1) !important;
+}
+
+#wheel-text-container {
+    height: 18%;
+    width: 100%;
+}
+
+#wheel-text {
+    height: 100%;
+    width: 100%;
+    font-size: 6vw;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--primary--wheel);
+    font-weight: bold;
+    text-align: center;
+}
+
+#wheel {
+    height: 72%;
+    margin-top: 3%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+#wheel-pin {
+    position: absolute;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-top: 20px solid #ffffff;
+    transform: translate(0px, -12px);
+    z-index: 5;
+}
+
+#wheel_svg {
+    transition: transform 5s cubic-bezier(.4,.14,.25,1);
+}
+
+.wheel-text {
+    font-weight: bold;
+    font-size: 2px;
+    fill: var(--primary-color);
 }

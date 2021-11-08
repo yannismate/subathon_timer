@@ -20,6 +20,7 @@ $(document).ready(() => {
       $timer.text("00:00");
     }
     $uptime.text("Uptime " + dateMillisToTimer(Date.now() + (Date.now() - startedAt)));
+    wheelLogic();
   }, 1000);
   socket.on('update_timer', (req) => {
     const newEndingAt = req.ending_at;
@@ -125,6 +126,69 @@ $(document).ready(() => {
     $graphIcon.css('transform', `translateX(-50%) translateY(-${iconY}px)`);
   });
 
+
+  // Wheel
+  const $wheelSvg = $('#wheel_svg');
+  const $wheelText = $('#wheel-text');
+  const wheelQueue = [];
+  let wheelAnimationRunning = false;
+  /*<circle id="wheel_chart_to_self" r="5" cx="10" cy="10" stroke-dasharray="0"/>*/
+  socket.on('display_spin', (req) => {
+    wheelQueue.push(req);
+  });
+  function wheelLogic() {
+    if(wheelAnimationRunning || wheelQueue.length <= 0) return;
+
+    $wheelText.text('Sub Wheel')
+    $wheelSvg.html('');
+    const wheelData = wheelQueue.shift();
+    let totalChances = 0;
+    for(let i = 0; i < wheelData.results.length; i++) {
+      let rs = wheelData.results[i];
+      $wheelSvg.html($wheelSvg.html() + `<circle id="wheel_part_${i}" r="5" cx="10" cy="10" stroke-width="10" fill="none" stroke="${rs.color}" />`);
+      setChartCircle($(`#wheel_part_${i}`), rs.chance, totalChances);
+      totalChances += rs.chance;
+    }
+    $wheelSvg.html($wheelSvg.html() + `<text x="10" y="10.5"
+              text-anchor="middle"
+              alignment-baseline="central">
+          <tspan class="wheel-text">${wheelData.sender}</tspan>`);
+    const outcome = wheelData.random;
+    const amountOfSpins = Math.floor((Math.random() * 6) + 10) - outcome;
+    const deg = amountOfSpins * 360.0;
+
+    $('#container').addClass("wheel-active");
+    $('#wheel-container').addClass("animate__bounceIn");
+
+    setTimeout(async () => {
+
+      // Start Spin
+      $wheelSvg.css("transform", `rotate(${deg}deg)`);
+
+      await sleep(5000);
+
+      // Display result
+      $wheelText.text(wheelData.res.text);
+      socket.emit("spin_completed", wheelData.id);
+
+      await sleep(4000);
+
+      // Hide wheel
+      $('#container').removeClass("wheel-active");
+      $('#wheel-container').removeClass("animate__bounceIn");
+
+      // Reset wheel rotation
+      const oldTransition = $wheelSvg.css('transition');
+      $wheelSvg.css("transition", "transform 0.1s linear");
+      await sleep(20);
+      $wheelSvg.css('transform', 'rotate(0deg)');
+      await sleep(20);
+      $wheelSvg.css("transition", oldTransition);
+      wheelAnimationRunning = false;
+
+    }, 2500);
+  }
+
 });
 
 function dateMillisToTimer(millis) {
@@ -145,4 +209,18 @@ function calculateKeyframeArray(oldTime, newTime) {
     return Math.ceil(mapValue(k, 0, 50, oldTime, newTime));
   }).map(dateMillisToTimer);
 
+}
+
+function setChartCircle(element, percentage, offset) {
+  offset = 1.25 - offset;
+  const radius = element.attr("r");
+  const circ = radius * 2 * Math.PI;
+  element.attr("stroke-dasharray", `${circ * percentage} ${circ * (1-percentage)}`);
+  element.attr("stroke-dashoffset", circ * offset);
+}
+
+async function sleep(millis) {
+  return new Promise(resolve => {
+    setTimeout(resolve, millis);
+  });
 }

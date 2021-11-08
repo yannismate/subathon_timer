@@ -16,6 +16,8 @@ $(document).ready(() => {
   setInterval(() => {
     if(!timerAnimationPlaying && endingAt > Date.now()) {
       $timer.text(dateMillisToTimer(endingAt));
+    } else if(endingAt < Date.now()) {
+      $timer.text("00:00");
     }
     $uptime.text("Uptime " + dateMillisToTimer(Date.now() + (Date.now() - startedAt)));
   }, 1000);

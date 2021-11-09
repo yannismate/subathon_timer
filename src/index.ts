@@ -163,7 +163,7 @@ function registerTwitchEvents(state: AppState) {
     await state.db.run('INSERT INTO subs VALUES(?, ?, ?, ?, ?);', [Date.now(), state.endingAt, methods.plan||"undefined", username]);
   });
 
-  state.twitch.on('submysterygift', (channel: string, username: string, numbOfSubs: number,
+  state.twitch.on('submysterygift', async (channel: string, username: string, numbOfSubs: number,
                                methods: tmi.SubMethods, userstate: tmi.SubMysteryGiftUserstate) => {
     const possibleResults = cfg.wheel.filter(res => res.min_subs <= numbOfSubs);
     if(possibleResults.length > 0) {
@@ -184,6 +184,7 @@ function registerTwitchEvents(state: AppState) {
       const spin = {results: possibleResults, random: rand, id: spinId, res: result, sender: userstate.login||"", mod: userstate.mod};
       state.spins.set(spinId, spin);
       state.io.emit('display_spin', spin);
+      await state.db.run('INSERT INTO sub_bombs VALUES(?, ?, ?, ?);', [Date.now(), numbOfSubs, methods.plan||"undefined", username]);
     }
   });
 

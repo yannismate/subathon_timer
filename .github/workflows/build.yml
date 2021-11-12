@@ -21,6 +21,9 @@ jobs:
       
     - name: Lint with TSLint
       run: npm run lint
+
+    - name: Copy example config
+      run: cp config.example.json config.json
       
     - name: Build
       run: npm run build

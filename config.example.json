@@ -1,0 +1,72 @@
+{
+  "port": 8080,
+  "channel": "yannismate",
+  "admins": ["yannismate", "definitelynotyannis"],
+  "wheel_blacklist": ["definitelynotyannis", "fossabot"],
+  "twitch_token": "oauth:XXXXXXXXXX",
+  "use_streamlabs": false,
+  "streamlabs_token": "StreamlabsSocketToken",
+  "enable_wheel": true,
+  "time": {
+    "base_value": 60,
+    "multipliers": {
+      "tier_1": 1,
+      "tier_2": 2,
+      "tier_3": 5,
+      "donation": 0.2,
+      "bits": 0.2
+    }
+  },
+  "wheel": [
+    {
+      "type": "time",
+      "value": 300,
+      "chance": 0.28,
+      "text": "+5 Minutes",
+      "color": "#9cf000",
+      "min_subs": 5
+    },
+    {
+      "type": "time",
+      "value": -300,
+      "chance": 0.28,
+      "text": "-5 Minutes",
+      "color": "#0000FF",
+      "min_subs": 5
+    },
+    {
+      "type": "time",
+      "value": 1800,
+      "chance": 0.02,
+      "text": "+30 Minutes",
+      "color": "#00990d",
+      "min_subs": 5
+    },
+    {
+      "type": "time",
+      "value": -1800,
+      "chance": 0.02,
+      "text": "-30 Minutes",
+      "color": "#9c0000",
+      "min_subs": 5
+    },
+    {
+      "type": "timeout",
+      "target": "sender",
+      "value": 300,
+      "chance": 0.20,
+      "text": "Self timeout",
+      "color": "#fc5d00",
+      "min_subs": 5
+    },
+    {
+      "type": "timeout",
+      "target": "random",
+      "value": 300,
+      "chance": 0.20,
+      "text": "Random timeout",
+      "color": "#00fcd2",
+      "min_subs": 5
+    }
+  ]
+}

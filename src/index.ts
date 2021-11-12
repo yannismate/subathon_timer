@@ -260,8 +260,8 @@ class AppState {
   endingAt: number;
   baseTime: number;
 
-  randomTarget: string = "definitelynotyannis";
-  randomTargetIsMod: boolean = false;
+  randomTarget = "definitelynotyannis";
+  randomTargetIsMod = false;
 
   spins: Map<string, any> = new Map();
 

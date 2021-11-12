@@ -1,4 +1,3 @@
-const mapValue = (value, x1, y1, x2, y2) => (value - x1) * (y2 - x2) / (y1 - x1) + x2;
 
 $(document).ready(() => {
 
@@ -107,7 +106,7 @@ $(document).ready(() => {
     let min = Math.min(...arr);
     let max = Math.max(...arr);
 
-    const yCoords = min === max ? Array.from({length: 60}, _x => 55) : arr.map(x => mapValue(x, min, max, 105, 5));
+    const yCoords = min === max ? Array.from({length: 60}, () => 55) : arr.map(x => mapValue(x, min, max, 105, 5));
 
     let path = `M5 ${yCoords[0]}`;
     for(let i = 1; i < yCoords.length; i++) {
@@ -190,6 +189,10 @@ $(document).ready(() => {
   }
 
 });
+
+function mapValue(value, x1, y1, x2, y2) {
+  return (value - x1) * (y2 - x2) / (y1 - x1) + x2;
+}
 
 function dateMillisToTimer(millis) {
   const millisLeft = millis - Date.now();

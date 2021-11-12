@@ -5,7 +5,9 @@
   "main": "dist/index.js",
   "scripts": {
     "lint": "eslint .",
-    "start": "shx rm -rf dist && tsc && shx cp -r public ./dist && node dist/src/index.js",
+    "clean": "shx rm -rf dist",
+    "build": "npm run clean && tsc && shx cp -r public ./dist ",
+    "start": "npm run build && node dist/src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "yannismate",

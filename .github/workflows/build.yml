@@ -20,7 +20,7 @@ jobs:
       run: npm ci
       
     - name: Lint with TSLint
-      run: tslint -c tslint.json 'src/**/*.ts'
+      run: npm run lint
       
     - name: Build
       run: npm run build

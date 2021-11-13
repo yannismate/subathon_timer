@@ -72,11 +72,11 @@ $(document).ready(() => {
 
       const t2Div = document.createElement('div');
       t2Div.classList.add('incentive');
-      t2Div.innerText = `T1: ${t2}s`;
+      t2Div.innerText = `T2: ${t2}s`;
 
       const t3Div = document.createElement('div');
       t3Div.classList.add('incentive');
-      t3Div.innerText = `T1: ${t3}s`;
+      t3Div.innerText = `T3: ${t3}s`;
 
       $incentives.append(t1Div, t2Div, t3Div);
     }

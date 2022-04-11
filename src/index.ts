@@ -223,7 +223,8 @@ function registerSocketEvents(state: AppState) {
       'tier_2': Math.round(state.baseTime * cfg.time.multipliers.tier_2),
       'tier_3': Math.round(state.baseTime * cfg.time.multipliers.tier_3),
       'bits': Math.round(state.baseTime * cfg.time.multipliers.bits),
-      'donation': Math.round(state.baseTime * cfg.time.multipliers.donation)
+      'donation': Math.round(state.baseTime * cfg.time.multipliers.donation),
+      'follow': Math.round(state.baseTime * cfg.time.multipliers.follow)
     });
     socket.emit('update_timer', {'ending_at': state.endingAt, 'forced': true});
     socket.emit('update_uptime', {'started_at': state.startedAt});
@@ -245,6 +246,10 @@ function registerStreamlabsEvents(state: AppState) {
       if(state.endingAt < Date.now()) return;
       const secondsToAdd = Math.round(state.baseTime * amount * cfg.time.multipliers.donation * 1000) / 1000;
       state.addTime(secondsToAdd);
+    } else if(eventData.type === 'follow') {
+      if(state.endingAt < Date.now()) return;
+      const secondsToAdd = Math.round(state.baseTime * cfg.time.multipliers.follow * 1000) / 1000;
+      state.addTime(secondsToAdd)
     }
   });
 }
@@ -291,7 +296,8 @@ class AppState {
       'tier_2': Math.round(this.baseTime * cfg.time.multipliers.tier_2),
       'tier_3': Math.round(this.baseTime * cfg.time.multipliers.tier_3),
       'bits': Math.round(this.baseTime * cfg.time.multipliers.bits),
-      'donation': Math.round(this.baseTime * cfg.time.multipliers.donation)
+      'donation': Math.round(this.baseTime * cfg.time.multipliers.donation),
+      'follow': Math.round(this.baseTime * cfg.time.multipliers.follow)
     });
     await this.db.run('INSERT OR REPLACE INTO settings VALUES (?, ?);', ['base_time', newBaseTime]);
   }

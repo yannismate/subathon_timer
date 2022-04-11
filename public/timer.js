@@ -60,6 +60,7 @@ $(document).ready(() => {
     const t3 = req.tier_3 >= 0 ? "+" + String(req.tier_3) : String(req.tier_3);
     const bits = req.bits >= 0 ? "+" + String(req.bits) : String(req.bits);
     const donation = req.donation >= 0 ? "+" + String(req.donation) : String(req.donation);
+    const follow = req.follow >= 0 ? "+" + String(req.follow) : String(req.follow);
     if(req.tier_2 === 0 && req.tier_3 === 0) {
       const subDiv = document.createElement('div');
       subDiv.classList.add('incentive');
@@ -93,6 +94,13 @@ $(document).ready(() => {
       donationDiv.classList.add('incentive');
       donationDiv.innerText = `$1: ${donation}s`;
       $incentives.append(donationDiv);
+    }
+
+    if(req.follow !== 0) {
+      const followDiv = document.createElement('div');
+      followDiv.classList.add('incentive');
+      followDiv.innerText = `Follow: ${follow}s`;
+      $incentives.append(followDiv);
     }
   });
 

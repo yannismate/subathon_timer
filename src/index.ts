@@ -26,7 +26,7 @@ const USE_MOCK = !!process.env.USE_FDGT_MOCK;
 
 
   const twitch = !USE_MOCK ? tmi.Client({
-    channels: [cfg.channel],
+    channels: [cfg.channel.toLowerCase()],
     identity: cfg.twitch_token ? {
       username: cfg.channel.toLowerCase(),
       password: cfg.twitch_token

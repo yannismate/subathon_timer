@@ -1,6 +1,7 @@
 import * as express from "express";
 import * as http from "http";
 import * as socketio from "socket.io";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import socketioclient from "socket.io-client";
 import sqlite3 from 'sqlite3'

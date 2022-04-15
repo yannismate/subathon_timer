@@ -26,7 +26,7 @@ const USE_MOCK = !!process.env.USE_FDGT_MOCK;
   const twitch = !USE_MOCK ? tmi.Client({
     channels: [cfg.channel],
     identity: cfg.twitch_token ? {
-      username: cfg.channel,
+      username: cfg.channel.toLowerCase(),
       password: cfg.twitch_token
     } : undefined
   }) : tmi.Client({
@@ -96,13 +96,13 @@ const USE_MOCK = !!process.env.USE_FDGT_MOCK;
 function registerTwitchEvents(state: AppState) {
   state.twitch.on('message', async (channel: string, userstate: tmi.ChatUserstate, message: string, self: boolean) => {
     if(self) return;
-    if(!cfg.wheel_blacklist.includes(userstate.username||"")) {
+    if(!isWheelBlacklisted(userstate.username||"")) {
       if(Math.random() > 0.90) {
         state.randomTarget = userstate.username || "";
         state.randomTargetIsMod = userstate.mod || false;
       }
     }
-    if(message.startsWith('?') && cfg.admins.includes(userstate.username||"")) {
+    if(message.startsWith('?') && isAdmin(userstate.username||"")) {
       {
         // ?start
         const match = message.match(/^\?start ((\d+:)?\d{2}:\d{2})/);
@@ -236,6 +236,14 @@ function registerSocketEvents(state: AppState) {
     socket.on('spin_completed', async spinId => {
       await state.executeSpinResult(spinId);
     });});
+}
+
+function isAdmin(username: string) {
+  return cfg.admins.filter(admin => admin.toLowerCase() === username.toLowerCase()).length > 0
+}
+
+function isWheelBlacklisted(username: string) {
+  return cfg.wheel_blacklist.filter(b => b.toLowerCase() === username.toLowerCase()).length > 0
 }
 
 function registerStreamlabsEvents(state: AppState) {

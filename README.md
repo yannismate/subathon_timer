@@ -19,7 +19,7 @@ created in the base directory. You can simply make a copy of the `config.example
 |port|Port for the integrated webserver|
 |channel|Twitch channel the timer will listen to events on|
 |admins|Twitch users that will have access to commands|
-|wheel_blacklist|List of Twitch users that cannot be timed out by the wheel random timeout option|
+|wheel_blacklist|List of Twitch users that cannot be timed out by the wheel timeout option|
 |twitch_token|Twitch OAuth token to execute timeouts from ([obtain here](https://twitchapps.com/tmi/))|
 |use_streamlabs|Enable streamlabs connection for donations|
 |streamlabs_token|Streamlabs Socket Token used to connect to Streamlabs|

@@ -165,7 +165,10 @@ function registerTwitchEvents(state: AppState) {
 
   state.twitch.on('submysterygift', async (channel: string, username: string, numbOfSubs: number,
                                methods: tmi.SubMethods, userstate: tmi.SubMysteryGiftUserstate) => {
-    const possibleResults = cfg.wheel.filter(res => res.min_subs <= numbOfSubs);
+    let possibleResults = cfg.wheel.filter(res => res.min_subs <= numbOfSubs);
+    if(isWheelBlacklisted(username)) {
+      possibleResults = possibleResults.filter(res => !(res.type === "timeout" && res.target === "self"))
+    }
     if(possibleResults.length > 0) {
       const totalChances = possibleResults.map(r => r.chance).reduce((a,b) => a+b);
       possibleResults.forEach(r => r.chance = r.chance / totalChances);

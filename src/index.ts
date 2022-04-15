@@ -1,7 +1,8 @@
 import * as express from "express";
 import * as http from "http";
 import * as socketio from "socket.io";
-import * as socketioclient from "socket.io-client";
+// @ts-ignore
+import socketioclient from "socket.io-client";
 import sqlite3 from 'sqlite3'
 import * as sqlite from 'sqlite'
 import cfg from '../config.json'
@@ -250,7 +251,7 @@ function isWheelBlacklisted(username: string) {
 }
 
 function registerStreamlabsEvents(state: AppState) {
-  const slabs = socketioclient.io(`https://sockets.streamlabs.com?token=${cfg.streamlabs_token}`, {transports: ['websocket']});
+  const slabs = socketioclient(`https://sockets.streamlabs.com?token=${cfg.streamlabs_token}`, {transports: ['websocket']});
   slabs.on('event', (eventData : any) => {
     if(eventData.type === 'donation') {
       const amount = eventData.message.amount;
@@ -262,6 +263,15 @@ function registerStreamlabsEvents(state: AppState) {
       const secondsToAdd = Math.round(state.baseTime * cfg.time.multipliers.follow * 1000) / 1000;
       state.addTime(secondsToAdd)
     }
+  });
+  slabs.on("connect_error", (err: any) => {
+    console.log(`streamlabs connection error: ${err}`);
+  });
+  slabs.on("reconnecting", (attempt: any) => {
+    console.log(`streamlabs reconnecting (attempt ${attempt})`);
+  });
+  slabs.on("disconnect", (reason: any) => {
+    console.log(`streamlabs disconnected! (${reason}) is your token valid?`);
   });
 }
 

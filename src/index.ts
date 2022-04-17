@@ -255,10 +255,16 @@ function registerStreamlabsEvents(state: AppState) {
   const slabs = socketioclient(`https://sockets.streamlabs.com?token=${cfg.streamlabs_token}`, {transports: ['websocket']});
   slabs.on('event', (eventData : any) => {
     if(eventData.type === 'donation') {
-      const amount = eventData.message.amount;
-      if(state.endingAt < Date.now()) return;
-      const secondsToAdd = Math.round(state.baseTime * amount * cfg.time.multipliers.donation * 1000) / 1000;
-      state.addTime(secondsToAdd);
+      for(const msg of eventData.message) {
+        const amount = msg.amount;
+        if(amount == null) {
+          console.log(`Error adding donation! Amount seems to be null. Message: ${JSON.stringify(eventData)}`)
+          return;
+        }
+        if(state.endingAt < Date.now()) return;
+        const secondsToAdd = Math.round(state.baseTime * amount * cfg.time.multipliers.donation * 1000) / 1000;
+        state.addTime(secondsToAdd);
+      }
     } else if(eventData.type === 'follow') {
       if(state.endingAt < Date.now()) return;
       const secondsToAdd = Math.round(state.baseTime * cfg.time.multipliers.follow * 1000) / 1000;
@@ -338,6 +344,9 @@ class AppState {
   }
 
   addTime(seconds: number) {
+    if(seconds == null) {
+      return
+    }
     this.endingAt = this.endingAt + (seconds * 1000);
     this.io.emit('update_timer', {'ending_at': this.endingAt});
   }

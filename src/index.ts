@@ -153,6 +153,30 @@ function registerTwitchEvents(state: AppState) {
         }
       }
 
+      {
+
+        // ?forceuptime
+        const match = message.match(/^\?forceuptime ((\d+:)?\d{2}:\d{2})/);
+        if(match) {
+          if(state.isStarted) {
+            const timeStr = match[1].split(":");
+            let minusSeconds;
+            if(timeStr.length === 3) {
+              const hours = parseInt(timeStr[0], 10);
+              const minutes = parseInt(timeStr[1], 10);
+              const seconds = parseInt(timeStr[2], 10);
+              minusSeconds = (((hours*60) + minutes) * 60) + seconds
+            } else {
+              const minutes = parseInt(timeStr[0], 10);
+              const seconds = parseInt(timeStr[1], 10);
+              minusSeconds = (minutes * 60) + seconds
+            }
+            await state.updateStartedAt(Date.now() - (minusSeconds * 1000))
+          }
+        }
+
+      }
+
     }
   });
 
@@ -334,6 +358,12 @@ class AppState {
     this.isStarted = true;
     this.startedAt = Date.now();
     this.forceTime(seconds);
+    this.io.emit('update_uptime', {'started_at': this.startedAt});
+    await this.db.run('INSERT OR REPLACE INTO settings VALUES (?, ?);', ['started_at', this.startedAt]);
+  }
+
+  async updateStartedAt(newStartedAt: number) {
+    this.startedAt = newStartedAt
     this.io.emit('update_uptime', {'started_at': this.startedAt});
     await this.db.run('INSERT OR REPLACE INTO settings VALUES (?, ?);', ['started_at', this.startedAt]);
   }

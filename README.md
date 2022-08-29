@@ -14,32 +14,34 @@ Configurable Twitch Subathon Timer with integrated wheel of fortune
 Before starting the program a configuration file with the name `config.json` has to be
 created in the base directory. You can simply make a copy of the `config.example.json` and rename it.
 
-|Configuration option|Details|
-|---|---|
-|port|Port for the integrated webserver|
-|channel|Twitch channel the timer will listen to events on|
-|admins|Twitch users that will have access to commands|
-|wheel_blacklist|List of Twitch users that cannot be timed out by the wheel timeout option|
-|twitch_token|Twitch OAuth token to execute timeouts from ([obtain here](https://twitchapps.com/tmi/))|
-|use_streamlabs|Enable streamlabs connection for donations|
-|streamlabs_token|Streamlabs Socket Token used to connect to Streamlabs|
-|enable_wheel|Enable wheel of fortune|
-|time||
-|time.base_value|Base value used to calculate all other values|
-|time.multipliers||
-|time.multipliers.tier_1|Multiplier for Tier 1 or Prime subs|
-|time.multipliers.tier_2|Multiplier for Tier 2 subs|
-|time.multipliers.tier_3|Multiplier for Tier 3 subs|
-|time.multipliers.donation|Multiplier for donations per $1|
-|time.multipliers.bits|Multiplier for bits per 100 bits|
-|wheel||
-|wheel[].type|Wheel spin type (`time`,`timeout`)|
-|wheel[].value|Value for timeout or time in seconds|
-|wheel[].chance|Weight for this specific result|
-|wheel[].text|Result Text shown on the timer|
-|wheel[].min_subs|Minimum amount of subs in the sub-bomb to include this option|
-|wheel[].color|CSS color of this result on the wheel|
-|wheel[].target|Timeout target (`sender`, `random`)|
+| Configuration option      | Details                                                                                                                           |
+|---------------------------|-----------------------------------------------------------------------------------------------------------------------------------|
+| port                      | Port for the integrated webserver                                                                                                 |
+| channel                   | Twitch channel the timer will listen to events on                                                                                 |
+| admins                    | Twitch users that will have access to commands                                                                                    |
+| wheel_blacklist           | List of Twitch users that cannot be timed out by the wheel timeout option                                                         |
+| twitch_token              | Twitch OAuth token to execute timeouts from ([obtain here](https://twitchapps.com/tmi/))                                          |
+| use_streamlabs            | Enable streamlabs connection for donations                                                                                        |
+| streamlabs_token          | Streamlabs Socket Token used to connect to Streamlabs                                                                             |
+| use_streamelements        | Enable streamelements connection for donations                                                                                    |
+| streamelements_token      | Streamelements JWT Token used to connect to Streamelements ([obtain here](https://streamelements.com/dashboard/account/channels)) |
+| enable_wheel              | Enable wheel of fortune                                                                                                           |
+| time                      ||
+| time.base_value           | Base value used to calculate all other values                                                                                     |
+| time.multipliers          ||
+| time.multipliers.tier_1   | Multiplier for Tier 1 or Prime subs                                                                                               |
+| time.multipliers.tier_2   | Multiplier for Tier 2 subs                                                                                                        |
+| time.multipliers.tier_3   | Multiplier for Tier 3 subs                                                                                                        |
+| time.multipliers.donation | Multiplier for donations per $1                                                                                                   |
+| time.multipliers.bits     | Multiplier for bits per 100 bits                                                                                                  |
+| wheel                     ||
+| wheel[].type              | Wheel spin type (`time`,`timeout`)                                                                                                |
+| wheel[].value             | Value for timeout or time in seconds                                                                                              |
+| wheel[].chance            | Weight for this specific result                                                                                                   |
+| wheel[].text              | Result Text shown on the timer                                                                                                    |
+| wheel[].min_subs          | Minimum amount of subs in the sub-bomb to include this option                                                                     |
+| wheel[].color             | CSS color of this result on the wheel                                                                                             |
+| wheel[].target            | Timeout target (`sender`, `random`)                                                                                               |
 
 
 #### Assets

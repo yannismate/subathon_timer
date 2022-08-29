@@ -1,0 +1,44 @@
+@font-face {
+  font-family: 'Lexend';
+  src: url('fonts/Lexend-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Lexend';
+  src: url('fonts/Lexend-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Lexend, sans-serif;
+}
+
+#reason_text {
+  font-size: 4vw;
+  transform: translateY(-120%);
+  animation-duration: 3s;
+  color: white;
+  text-shadow: 0 0 4px black, 0 0 4px black, 0 0 4px black, 0 0 4px black, 0 0 4px black, 0 0 4px black, 0 0 4px black, 0 0 4px black, 0 0 4px black, 0 0 4px black, 0 0 4px black, 0 0 4px black, 0 0 4px black, 0 0 4px black, 0 0 4px black, 0 0 4px black, 0 0 4px black, 0 0 4px black, 0 0 4px black, 0 0 4px black;
+  -webkit-font-smoothing: antialiased
+}
+
+@keyframes anim {
+  from {
+    transform : translateY(-120%);
+  }
+  30% {
+    transform : translateY(0%);
+  }
+  70% {
+    transform : translateY(0%);
+  }
+  to {
+    transform : translateY(-120%);
+  }
+}

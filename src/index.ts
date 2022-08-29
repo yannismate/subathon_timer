@@ -325,7 +325,7 @@ function registerStreamelementsEvents(state: AppState) {
   });
 
   seSocket.on("connect", () => {
-    seSocket.emit('authenticate', {method: 'jwt', token: cfg.streamelements_jwt});
+    seSocket.emit('authenticate', {method: 'jwt', token: cfg.streamelements_token});
   })
   seSocket.on("connect_error", (err: any) => {
     console.log(`streamelements connection error: ${err}`);

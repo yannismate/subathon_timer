@@ -6,6 +6,8 @@
   "twitch_token": "oauth:XXXXXXXXXX",
   "use_streamlabs": false,
   "streamlabs_token": "StreamlabsSocketToken",
+  "use_streamelements": false,
+  "streamelements_token": "StreamelementsJWTToken",
   "enable_wheel": true,
   "time": {
     "base_value": 60,

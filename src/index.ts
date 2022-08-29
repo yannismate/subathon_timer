@@ -83,6 +83,9 @@ const USE_MOCK = !!process.env.USE_FDGT_MOCK;
   if(cfg.use_streamlabs) {
     registerStreamlabsEvents(appState);
   }
+  if(cfg.use_streamelements) {
+    registerStreamelementsEvents(appState)
+  }
 
   server.listen(cfg.port, () => {
     console.log(`Open the timer at http://localhost:${cfg.port}/timer.html`);
@@ -304,6 +307,41 @@ function registerStreamlabsEvents(state: AppState) {
   slabs.on("disconnect", (reason: any) => {
     console.log(`streamlabs disconnected! (${reason}) is your token valid?`);
   });
+}
+
+function registerStreamelementsEvents(state: AppState) {
+  const seSocket = socketioclient(`https://realtime.streamelements.com`, {transports: ['websocket']});
+
+  seSocket.on('event', (data: any) => {
+    if(data.listener == 'tip-latest' && data.event.type == 'tip') {
+      if(state.endingAt < Date.now()) return;
+      const secondsToAdd = Math.round(state.baseTime * data.event.amount * cfg.time.multipliers.donation * 1000) / 1000;
+      state.addTime(secondsToAdd);
+    } else if(data.listener == 'follower-latest' && data.event.type == 'follower') {
+      if(state.endingAt < Date.now()) return;
+      const secondsToAdd = Math.round(state.baseTime * cfg.time.multipliers.follow * 1000) / 1000;
+      state.addTime(secondsToAdd);
+    }
+  });
+
+  seSocket.on("connect", () => {
+    seSocket.emit('authenticate', {method: 'jwt', token: cfg.streamelements_jwt});
+  })
+  seSocket.on("connect_error", (err: any) => {
+    console.log(`streamelements connection error: ${err}`);
+  });
+  seSocket.on("reconnecting", (attempt: any) => {
+    console.log(`streamelements reconnecting (attempt ${attempt})`);
+  });
+  seSocket.on("disconnect", (reason: any) => {
+    console.log(`streamelements disconnected! (${reason}) is your token valid?`);
+  });
+  seSocket.on('unauthorized', console.log);
+  seSocket.on('authenticated', (data: any) => {
+    const { channelId } = data;
+    console.log(`streamelements: successfully connected to channel ${channelId}`)
+  });
+
 }
 
 class AppState {

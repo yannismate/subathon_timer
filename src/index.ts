@@ -89,7 +89,7 @@ const USE_MOCK = !!process.env.USE_FDGT_MOCK;
 
   server.listen(cfg.port, () => {
     console.log(`Open the timer at http://localhost:${cfg.port}/timer.html`);
-    console.log(`There is also a popup for time changes with reason available at http://localhost`)
+    console.log(`There is also a popup for time changes with reason available at http://localhost:${cfg.port}/reason_popup.html`)
     if(USE_MOCK) {
       setInterval(async () => {
         await twitch.say(cfg.channel, 'submysterygift');

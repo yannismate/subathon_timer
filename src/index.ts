@@ -189,12 +189,15 @@ function registerTwitchEvents(state: AppState) {
     if(state.endingAt < Date.now()) return;
     const multiplier = multiplierFromPlan(methods.plan);
     const secondsToAdd = Math.round(state.baseTime * multiplier * 1000) / 1000;
-    state.addTime(secondsToAdd, `${username || "anonymous"} (subgift)`);
+    state.addTime(secondsToAdd);
     await state.db.run('INSERT INTO subs VALUES(?, ?, ?, ?, ?);', [Date.now(), state.endingAt, methods.plan||"undefined", username]);
   });
 
   state.twitch.on('submysterygift', async (channel: string, username: string, numbOfSubs: number,
                                methods: tmi.SubMethods, userstate: tmi.SubMysteryGiftUserstate) => {
+    const multiplier = multiplierFromPlan(methods.plan);
+    const secondsAdded = Math.round(state.baseTime * multiplier * 1000 * numbOfSubs) / 1000;
+    state.displayAddTimeUpdate(secondsAdded, `${username || "anonymous"} (subgift)`);
     let possibleResults = cfg.wheel.filter(res => res.min_subs <= numbOfSubs);
     if(isWheelBlacklisted(username)) {
       possibleResults = possibleResults.filter(res => !(res.type === "timeout" && res.target === "self"))
@@ -226,7 +229,8 @@ function registerTwitchEvents(state: AppState) {
     if(state.endingAt < Date.now()) return;
     const multiplier = multiplierFromPlan(methods.plan);
     const secondsToAdd = Math.round(state.baseTime * multiplier * 1000) / 1000;
-    state.addTime(secondsToAdd, `${username} (sub)`);
+    state.addTime(secondsToAdd);
+    state.displayAddTimeUpdate(secondsToAdd, `${username} (sub)`);
     await state.db.run('INSERT INTO subs VALUES(?, ?, ?, ?, ?);', [Date.now(), state.endingAt, methods.plan||"undefined", username]);
   });
 
@@ -235,7 +239,8 @@ function registerTwitchEvents(state: AppState) {
     if(state.endingAt < Date.now()) return;
     const multiplier = multiplierFromPlan(methods.plan);
     const secondsToAdd = Math.round(state.baseTime * multiplier * 1000) / 1000;
-    state.addTime(secondsToAdd, `${userstate.username || "anonymous"} (sub)`);
+    state.addTime(secondsToAdd);
+    state.displayAddTimeUpdate(secondsToAdd, `${username || "anonymous"} (sub)`);
     await state.db.run('INSERT INTO subs VALUES(?, ?, ?, ?, ?);', [Date.now(), state.endingAt, methods.plan||"undefined", username]);
   });
 
@@ -244,7 +249,8 @@ function registerTwitchEvents(state: AppState) {
     if(state.endingAt < Date.now()) return;
     const multiplier = cfg.time.multipliers.bits;
     const secondsToAdd = Math.round((bits / 100) * multiplier * state.baseTime * 1000) / 1000;
-    state.addTime(secondsToAdd, `${userstate.username || "anonymous"} (bits)`);
+    state.addTime(secondsToAdd);
+    state.displayAddTimeUpdate(secondsToAdd, `${userstate.username || "anonymous"} (bits)`);
     await state.db.run('INSERT INTO cheers VALUES(?, ?, ?, ?);', [Date.now(), state.endingAt, bits, userstate.username||"ananonymouscheerer"]);
   });
 }
@@ -291,13 +297,15 @@ function registerStreamlabsEvents(state: AppState) {
         }
         if(state.endingAt < Date.now()) return;
         const secondsToAdd = Math.round(state.baseTime * amount * cfg.time.multipliers.donation * 1000) / 1000;
-        state.addTime(secondsToAdd, `${msg.name} (tip)`);
+        state.addTime(secondsToAdd);
+        state.displayAddTimeUpdate(secondsToAdd, `${msg.name} (tip)`);
       }
     } else if(eventData.type === 'follow') {
       if(state.endingAt < Date.now()) return;
       const secondsToAdd = Math.round(state.baseTime * cfg.time.multipliers.follow * 1000) / 1000;
       const name = eventData.message[0]?.name || "undefined";
-      state.addTime(secondsToAdd, `${name} (follow)`);
+      state.addTime(secondsToAdd);
+      state.displayAddTimeUpdate(secondsToAdd, `${name} (follow)`);
     }
   });
   slabs.on("connect_error", (err: any) => {
@@ -318,11 +326,13 @@ function registerStreamelementsEvents(state: AppState) {
     if(data.listener == 'tip-latest' && data.event.type == 'tip') {
       if(state.endingAt < Date.now()) return;
       const secondsToAdd = Math.round(state.baseTime * data.event.amount * cfg.time.multipliers.donation * 1000) / 1000;
-      state.addTime(secondsToAdd, `${data.event.name} (tip)`);
+      state.addTime(secondsToAdd);
+      state.displayAddTimeUpdate(secondsToAdd, `${data.event.name} (tip)`);
     } else if(data.listener == 'follower-latest' && data.event.type == 'follower') {
       if(state.endingAt < Date.now()) return;
       const secondsToAdd = Math.round(state.baseTime * cfg.time.multipliers.follow * 1000) / 1000;
-      state.addTime(secondsToAdd, `${data.event.name} (follow)`);
+      state.addTime(secondsToAdd);
+      state.displayAddTimeUpdate(secondsToAdd, `${data.event.name} (follow)`);
     }
   });
 
@@ -413,12 +423,16 @@ class AppState {
     this.io.emit('update_timer', {'ending_at': this.endingAt, 'forced': true});
   }
 
-  addTime(seconds: number, reason: string) {
+  addTime(seconds: number) {
     if(seconds == null) {
       return
     }
     this.endingAt = this.endingAt + (seconds * 1000);
     this.io.emit('update_timer', {'ending_at': this.endingAt});
+
+  }
+
+  displayAddTimeUpdate(seconds: number, reason: string) {
     this.io.emit('time_add_reason', {'seconds_added': seconds, 'reason': reason})
   }
 
@@ -428,7 +442,8 @@ class AppState {
     this.spins.delete(spinId);
 
     if(spin.res.type === 'time') {
-      this.addTime(spin.res.value, `${spin.sender} (wheel)`);
+      this.addTime(spin.res.value);
+      this.displayAddTimeUpdate(spin.res.value, `${spin.sender} (wheel)`)
     } else if(spin.res.type === 'timeout') {
       if(spin.res.target === 'random') {
         const target = this.randomTarget;

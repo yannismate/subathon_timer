@@ -322,17 +322,17 @@ function registerStreamlabsEvents(state: AppState) {
 function registerStreamelementsEvents(state: AppState) {
   const seSocket = socketioclient(`https://realtime.streamelements.com`, {transports: ['websocket']});
 
-  seSocket.on('event', (data: any) => {
-    if(data.listener == 'tip-latest' && data.event.type == 'tip') {
+  seSocket.on('event', (event: any) => {
+    if(event.type == 'tip') {
       if(state.endingAt < Date.now()) return;
-      const secondsToAdd = Math.round(state.baseTime * data.event.amount * cfg.time.multipliers.donation * 1000) / 1000;
+      const secondsToAdd = Math.round(state.baseTime * event.data.amount * cfg.time.multipliers.donation * 1000) / 1000;
       state.addTime(secondsToAdd);
-      state.displayAddTimeUpdate(secondsToAdd, `${data.event.name} (tip)`);
-    } else if(data.listener == 'follower-latest' && data.event.type == 'follower') {
+      state.displayAddTimeUpdate(secondsToAdd, `${event.data.displayName || event.data.username || "anonymous"} (tip)`);
+    } else if(event.type == 'follower') {
       if(state.endingAt < Date.now()) return;
       const secondsToAdd = Math.round(state.baseTime * cfg.time.multipliers.follow * 1000) / 1000;
       state.addTime(secondsToAdd);
-      state.displayAddTimeUpdate(secondsToAdd, `${data.event.name} (follow)`);
+      state.displayAddTimeUpdate(secondsToAdd, `${event.data.displayName} (follow)`);
     }
   });
 

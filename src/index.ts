@@ -447,19 +447,22 @@ class AppState {
     } else if(spin.res.type === 'timeout') {
       if(spin.res.target === 'random') {
         const target = this.randomTarget;
+        const targetIsMod = this.randomTargetIsMod;
         await this.twitch.timeout(cfg.channel, target, spin.res.value, "WHEEL SPIN").catch(err => console.log('Could not execute wheel TO!', err));
-        if(this.randomTargetIsMod) {
+        if(targetIsMod) {
+          console.log(`Remodding ${target} in ${(1000*spin.res.value) + 5000}ms`);
           setTimeout(async () => {
             await this.twitch.mod(cfg.channel, target).catch(err => console.log('Could not remod user after wheel TO!', err));
-          }, 1000*spin.res.value + 5000);
+          }, (1000*spin.res.value) + 5000);
         }
       } else if(spin.res.target === 'sender') {
         const wasMod = spin.res.mod;
         await this.twitch.timeout(cfg.channel, spin.sender, spin.res.value, "WHEEL SPIN").catch(err => console.log('Could not execute wheel TO!', err));
         if(wasMod) {
+          console.log(`Remodding ${spin.sender} in ${(1000*spin.res.value) + 5000}ms`);
           setTimeout(async () => {
             await this.twitch.mod(cfg.channel, spin.sender).catch(err => console.log('Could not remod user after wheel TO!', err));
-          }, 1000*spin.res.value + 5000);
+          }, (1000*spin.res.value) + 5000);
         }
       }
     }

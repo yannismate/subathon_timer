@@ -146,6 +146,7 @@ $(document).ready(() => {
   function wheelLogic() {
     if(wheelAnimationRunning || wheelQueue.length <= 0) return;
 
+    wheelAnimationRunning = true;
     $wheelText.text('Sub Wheel')
     $wheelSvg.html('');
     const wheelData = wheelQueue.shift();

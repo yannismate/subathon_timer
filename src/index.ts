@@ -202,7 +202,7 @@ function registerTwitchEvents(state: AppState) {
     if(isWheelBlacklisted(username)) {
       possibleResults = possibleResults.filter(res => !(res.type === "timeout" && res.target === "self"))
     }
-    if(possibleResults.length > 0) {
+    if(possibleResults.length > 0 && cfg.enable_wheel) {
       const totalChances = possibleResults.map(r => r.chance).reduce((a,b) => a+b);
       possibleResults.forEach(r => r.chance = r.chance / totalChances);
       const rand = Math.random();
@@ -220,8 +220,8 @@ function registerTwitchEvents(state: AppState) {
       const spin = {results: possibleResults, random: rand, id: spinId, res: result, sender: userstate.login||"", mod: userstate.mod};
       state.spins.set(spinId, spin);
       state.io.emit('display_spin', spin);
-      await state.db.run('INSERT INTO sub_bombs VALUES(?, ?, ?, ?);', [Date.now(), numbOfSubs, methods.plan||"undefined", username]);
     }
+    await state.db.run('INSERT INTO sub_bombs VALUES(?, ?, ?, ?);', [Date.now(), numbOfSubs, methods.plan||"undefined", username]);
   });
 
   state.twitch.on('subscription', async (channel: string, username: string, methods: tmi.SubMethods,

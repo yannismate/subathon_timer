@@ -403,7 +403,10 @@ function registerTwitchEvents(state: AppState) {
           const mode = message.split(" ")[1]
           const oldWheelMode = state.getWheelMode();
           state.setWheelMode(mode);
-          await state.twitch.say(cfg.channel, `Wheel mode switched from ${oldWheelMode} to ${mode}`);
+          const numOptions = cfg.wheel
+              .filter(action => (action.conditions.mode || ["default"])
+                  .map(m => m.toLowerCase()).includes(mode)).length;
+          await state.twitch.say(cfg.channel, `Wheel mode switched from ${oldWheelMode} to ${mode}. New mode has ${numOptions} configured options.`);
         }
 
       }

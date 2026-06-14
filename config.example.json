@@ -28,6 +28,7 @@
       "text": "+5 Minutes",
       "color": "#9cf000",
       "conditions": {
+        "mode": ["default", "specialgame"],
         "gifts": {
           "min": 5,
           "max": 10
@@ -41,6 +42,7 @@
       "text": "-5 Minutes",
       "color": "#0000FF",
       "conditions": {
+        "mode": ["specialgame"],
         "gifts": {
           "min": 5
         }

@@ -43,9 +43,10 @@ created in the base directory. You can simply make a copy of the `config.example
 | wheel[].text                | Result Text shown on the timer                                                                                                          |
 | wheel[].color               | CSS color of this result on the wheel                                                                                                   |
 | wheel[].target              | Timeout target (`sender`, `random`)                                                                                                     |
-| wheel[].conditions          | Conditions for wheel option to be present. Optional entries for "gifts" and "donation" (see below)                                      |
+| wheel[].conditions          | Conditions for wheel option to be present. Optional entries for "gifts", "donation" and "modes" (see below)                             |
 | wheel[].conditions.gifts    | Conditions for wheel option to be present on gifted subs. Will not trigger on gifts if not present. Optional "min" and "max" options.   |
 | wheel[].conditions.donation | Conditions for wheel option to be present on donations. Will not trigger on donations if not present. Optional "min" and "max" options. |
+| wheel[].conditions.modes    | Conditions for wheel modes where option is present. Default is \["default"\].                                                           |
 
 
 #### Assets
@@ -61,6 +62,7 @@ the files in public/assets with your own assets.
 * `?start [hh:mm:ss]` (when not started) Start the timer with the given timer value and set the uptime to 0
 * `?forcetimer [hh:mm:ss]` (when running) Update the timers value
 * `?setbasetime [seconds]` Update the base time
+* `?wheelmode [mode]` Update the wheel mode for filtering options
 
 # License
 This project is licensed under the GNU General Public License v3.0 License - see the LICENSE file for details

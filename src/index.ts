@@ -49,6 +49,7 @@ class AppState {
   randomTargetIsMod = false;
 
   spins: Map<string, any> = new Map();
+  wheelMode: string = "default";
 
   constructor(twitch: tmi.Client, db: sqlite.Database, io: socketio.Server,
               isStarted: boolean, startedAt: number, endingAt: number, baseTime: number) {
@@ -114,12 +115,23 @@ class AppState {
     this.io.emit('time_add_reason', {'seconds_added': seconds, 'reason': reason})
   }
 
+  setWheelMode(mode: string) {
+    this.wheelMode = mode;
+  }
+
+  getWheelMode() {
+    return this.wheelMode;
+  }
+
   triggerWheelSpin(triggerType: WheelTriggerType, triggerValue: number, username: string, userLogin: string = "", userId: string = "", userIsMod: boolean = false) {
     if (!cfg.enable_wheel) {
       return;
     }
 
     let possibleResults = cfg.wheel.filter(res => {
+      if (!(res.conditions.mode ?? ["default"]).map(s => s.toLowerCase()).includes(this.wheelMode.toLowerCase())) {
+        return false;
+      }
       if (triggerType == WheelTriggerType.DONATION && res.conditions.donation) {
         return res.conditions.donation.min ?? 0 <= triggerValue && res.conditions.donation.max ?? Number.MAX_SAFE_INTEGER >= triggerValue;
       }
@@ -380,6 +392,18 @@ function registerTwitchEvents(state: AppState) {
             }
             await state.updateStartedAt(Date.now() - (minusSeconds * 1000))
           }
+        }
+
+      }
+
+      {
+
+        // ?wheelmode
+        if(message.startsWith("?wheelmode ")) {
+          const mode = message.split(" ")[1]
+          const oldWheelMode = state.getWheelMode();
+          state.setWheelMode(mode);
+          await state.twitch.say(cfg.channel, `Wheel mode switched from ${oldWheelMode} to ${mode}`);
         }
 
       }

@@ -28,6 +28,11 @@ let tokenCache: TokenCache = {
   refresh_token: "",
 };
 
+enum WheelTriggerType {
+  SUB_GIFTS,
+  DONATION
+}
+
 class AppState {
   twitch: tmi.Client;
   db: sqlite.Database;
@@ -107,6 +112,45 @@ class AppState {
 
   displayAddTimeUpdate(seconds: number, reason: string) {
     this.io.emit('time_add_reason', {'seconds_added': seconds, 'reason': reason})
+  }
+
+  triggerWheelSpin(triggerType: WheelTriggerType, triggerValue: number, username: string, userLogin: string = "", userId: string = "", userIsMod: boolean = false) {
+    if (!cfg.enable_wheel) {
+      return;
+    }
+
+    let possibleResults = cfg.wheel.filter(res => {
+      if (triggerType == WheelTriggerType.DONATION && res.conditions.donation) {
+        return res.conditions.donation.min ?? 0 <= triggerValue && res.conditions.donation.max ?? Number.MAX_SAFE_INTEGER >= triggerValue;
+      }
+      if (triggerType == WheelTriggerType.SUB_GIFTS && res.conditions.gifts) {
+        return res.conditions.gifts.min ?? 0 <= triggerValue && res.conditions.gifts.max ?? Number.MAX_SAFE_INTEGER >= triggerValue;
+      }
+      return false;
+    });
+
+    if(triggerType == WheelTriggerType.DONATION || (triggerType == WheelTriggerType.SUB_GIFTS && isWheelBlacklisted(username))) {
+      possibleResults = possibleResults.filter(res => !(res.type === "timeout" && res.target === "self"))
+    }
+    if(possibleResults.length > 0) {
+      const totalChances = possibleResults.map(r => r.chance).reduce((a,b) => a+b);
+      possibleResults.forEach(r => r.chance = r.chance / totalChances);
+      const rand = Math.random();
+      let result = possibleResults[0];
+      let resRand = 0;
+      for (const sp of possibleResults) {
+        resRand += sp.chance;
+        if(resRand >= rand) {
+          result = sp;
+          break;
+        }
+      }
+
+      const spinId = crypto.randomBytes(8).toString("hex");
+      const spin = {results: possibleResults, random: rand, id: spinId, res: result, sender: userLogin, userId, userIsMod};
+      this.spins.set(spinId, spin);
+      this.io.emit('display_spin', spin);
+    }
   }
 
   async executeSpinResult(spinId: string) {
@@ -357,29 +401,7 @@ function registerTwitchEvents(state: AppState) {
     const multiplier = multiplierFromPlan(methods.plan);
     const secondsAdded = Math.round(state.baseTime * multiplier * 1000 * numbOfSubs) / 1000;
     state.displayAddTimeUpdate(secondsAdded, `${username || "anonymous"} (subgift)`);
-    let possibleResults = cfg.wheel.filter(res => res.min_subs <= numbOfSubs);
-    if(isWheelBlacklisted(username)) {
-      possibleResults = possibleResults.filter(res => !(res.type === "timeout" && res.target === "self"))
-    }
-    if(possibleResults.length > 0 && cfg.enable_wheel) {
-      const totalChances = possibleResults.map(r => r.chance).reduce((a,b) => a+b);
-      possibleResults.forEach(r => r.chance = r.chance / totalChances);
-      const rand = Math.random();
-      let result = possibleResults[0];
-      let resRand = 0;
-      for (const sp of possibleResults) {
-        resRand += sp.chance;
-        if(resRand >= rand) {
-          result = sp;
-          break;
-        }
-      }
-
-      const spinId = crypto.randomBytes(8).toString("hex");
-      const spin = {results: possibleResults, random: rand, id: spinId, res: result, sender: userstate.login||"", senderId: userstate.id||"", mod: userstate.mod};
-      state.spins.set(spinId, spin);
-      state.io.emit('display_spin', spin);
-    }
+    state.triggerWheelSpin(WheelTriggerType.SUB_GIFTS, numbOfSubs, username, userstate.login, userstate.id, userstate.mod);
     await state.db.run('INSERT INTO sub_bombs VALUES(?, ?, ?, ?);', [Date.now(), numbOfSubs, methods.plan||"undefined", username]);
   });
 
@@ -458,6 +480,7 @@ function registerStreamlabsEvents(state: AppState) {
         const secondsToAdd = Math.round(state.baseTime * amount * cfg.time.multipliers.donation * 1000) / 1000;
         state.addTime(secondsToAdd);
         state.displayAddTimeUpdate(secondsToAdd, `${msg.name} (tip)`);
+        state.triggerWheelSpin(WheelTriggerType.DONATION, amount, msg.name);
       }
     } else if(eventData.type === 'follow') {
       if(state.endingAt < Date.now()) return;
@@ -490,6 +513,7 @@ function registerStreamelementsEvents(state: AppState) {
       const secondsToAdd = Math.round(state.baseTime * event.data.amount * cfg.time.multipliers.donation * 1000) / 1000;
       state.addTime(secondsToAdd);
       state.displayAddTimeUpdate(secondsToAdd, `${event.data.displayName || event.data.username || "anonymous"} (tip)`);
+      state.triggerWheelSpin(WheelTriggerType.DONATION, event.data.amount, event.data.displayName || event.data.username || "anonymous");
     } else if(event.type == 'follower') {
       if(state.endingAt < Date.now()) return;
       const secondsToAdd = Math.round(state.baseTime * cfg.time.multipliers.follow * 1000) / 1000;

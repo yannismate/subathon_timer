@@ -27,7 +27,12 @@
       "chance": 0.28,
       "text": "+5 Minutes",
       "color": "#9cf000",
-      "min_subs": 5
+      "conditions": {
+        "gifts": {
+          "min": 5,
+          "max": 10
+        }
+      }
     },
     {
       "type": "time",
@@ -35,7 +40,11 @@
       "chance": 0.28,
       "text": "-5 Minutes",
       "color": "#0000FF",
-      "min_subs": 5
+      "conditions": {
+        "gifts": {
+          "min": 5
+        }
+      }
     },
     {
       "type": "time",
@@ -43,7 +52,12 @@
       "chance": 0.02,
       "text": "+30 Minutes",
       "color": "#00990d",
-      "min_subs": 5
+      "conditions": {
+        "donation": {
+          "min": 5.0,
+          "max": 10.0
+        }
+      }
     },
     {
       "type": "time",
@@ -51,7 +65,11 @@
       "chance": 0.02,
       "text": "-30 Minutes",
       "color": "#9c0000",
-      "min_subs": 5
+      "conditions": {
+        "donation": {
+          "max": 5.0
+        }
+      }
     },
     {
       "type": "timeout",
@@ -60,7 +78,11 @@
       "chance": 0.20,
       "text": "Self timeout",
       "color": "#fc5d00",
-      "min_subs": 5
+      "conditions": {
+        "gifts": {
+          "min": 5
+        }
+      }
     },
     {
       "type": "timeout",
@@ -69,7 +91,11 @@
       "chance": 0.20,
       "text": "Random timeout",
       "color": "#00fcd2",
-      "min_subs": 5
+      "conditions": {
+        "gifts": {
+          "min": 5
+        }
+      }
     }
   ]
 }
